@@ -94,7 +94,6 @@ public class SplashActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 enterHome();
-
             }
         });
         builder.show();
