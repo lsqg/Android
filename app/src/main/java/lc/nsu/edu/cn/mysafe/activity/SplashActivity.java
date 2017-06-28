@@ -71,7 +71,6 @@ public class SplashActivity extends AppCompatActivity {
                     Toast.makeText(SplashActivity.this, "json error", Toast.LENGTH_LONG).show();
                     enterHome();
                     break;
-
             }
         }
     };
