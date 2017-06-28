@@ -1,24 +1,35 @@
 package lc.nsu.edu.cn.mysafe.activity;
 
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.lidroid.xutils.HttpUtils;
+import com.lidroid.xutils.exception.HttpException;
+import com.lidroid.xutils.http.ResponseInfo;
+import com.lidroid.xutils.http.callback.RequestCallBack;
 import org.json.JSONException;
 import org.json.JSONObject;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+
 import lc.nsu.edu.cn.mysafe.R;
 import lc.nsu.edu.cn.mysafe.utils.StreamUtil;
 
@@ -46,6 +57,7 @@ public class SplashActivity extends AppCompatActivity {
     private TextView tv_version_name;
     private int mLocalVersionCode;
     private String mVersionDes;
+    private String mDownloadUrl;
     private static final String tag = "SplashActivity";
 
     private Handler mHandler = new Handler(){
@@ -86,7 +98,7 @@ public class SplashActivity extends AppCompatActivity {
         builder.setPositiveButton("立即更新", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
+                downloadAPK();
             }
         });
         builder.setNegativeButton("暂不更新", new DialogInterface.OnClickListener() {
@@ -96,6 +108,46 @@ public class SplashActivity extends AppCompatActivity {
             }
         });
         builder.show();
+    }
+
+    private void downloadAPK() {
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
+            if (ContextCompat.checkSelfPermission(SplashActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+            }
+            Log.i(tag, String.valueOf(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)));
+            String path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/mobilesafe.apk";
+            HttpUtils httpUtils = new HttpUtils();
+            httpUtils.download(mDownloadUrl, path, new RequestCallBack<File>() {
+                @Override
+                public void onSuccess(ResponseInfo<File> responseInfo) {
+                    Log.i(tag, "下载成功");
+                    File file = responseInfo.result;
+                }
+
+                @Override
+                public void onFailure(HttpException e, String s) {
+                    Log.i(tag, String.valueOf(e));
+                    Log.i(tag, "下载失败");
+                }
+
+                @Override
+                public void onStart() {
+                    Log.i(tag, "刚刚开始下载");
+                    super.onStart();
+
+                }
+
+                @Override
+                public void onLoading(long total, long current, boolean isUploading) {
+                    Log.i(tag, "下载中。。。。。");
+                    Log.i(tag, "total = " + total);
+                    Log.i(tag, "current = " + current);
+                    super.onLoading(total, current, isUploading);
+
+                }
+            });
+        }
     }
 
     /**
@@ -120,7 +172,7 @@ public class SplashActivity extends AppCompatActivity {
      */
     private void initData() {
         //1，应用版本名称
-        tv_version_name.setText("版本名称：" + getVersionName());
+        tv_version_name.setText("版本名称:" + getVersionName());
         //检测服务端是否有更新
         //2,获取本地版本号
         mLocalVersionCode = getVersionCode();
@@ -163,11 +215,11 @@ public class SplashActivity extends AppCompatActivity {
                         JSONObject jsonObject = new JSONObject(json);
                         String versionCode = jsonObject.getString("code");
                         mVersionDes = jsonObject.getString("des");
-                        String downloadUrl = jsonObject.getString("apkurl");
+                        mDownloadUrl = jsonObject.getString("apkurl");
 
                         Log.i(tag, versionCode);
                         Log.i(tag, mVersionDes);
-                        Log.i(tag, downloadUrl);
+                        Log.i(tag, mDownloadUrl);
 
                         //8, 比对版本号，提示更新
                         if (mLocalVersionCode < Double.parseDouble(versionCode)){
@@ -237,5 +289,17 @@ public class SplashActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode){
+            case 1:
+                if (grantResults.length>0 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
+                    downloadAPK();
+                }
+                break;
+        }
     }
 }
