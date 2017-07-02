@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
@@ -15,6 +16,9 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.lidroid.xutils.HttpUtils;
@@ -54,6 +58,7 @@ public class SplashActivity extends AppCompatActivity {
      * json出错的状态码
      */
     private static final int JSON_ERROR = 104;
+    private RelativeLayout rl_root;
     private TextView tv_version_name;
     private int mLocalVersionCode;
     private String mVersionDes;
@@ -107,6 +112,13 @@ public class SplashActivity extends AppCompatActivity {
                 enterHome();
             }
         });
+        builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                enterHome();
+                dialog.dismiss();
+            }
+        });
         builder.show();
     }
 
@@ -123,6 +135,7 @@ public class SplashActivity extends AppCompatActivity {
                 public void onSuccess(ResponseInfo<File> responseInfo) {
                     Log.i(tag, "下载成功");
                     File file = responseInfo.result;
+                    installAPK(file);
                 }
 
                 @Override
@@ -151,6 +164,23 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     /**
+     * 安装对应APK
+     * @param file 安装文件
+     */
+    private void installAPK(File file) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
+        startActivityForResult(intent, 0);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        enterHome();
+    }
+
+    /**
      * 进入应用程序主界面
      */
     private void enterHome() {
@@ -165,6 +195,13 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
         initUI();
         initData();
+        initAnimation();
+    }
+
+    private void initAnimation() {
+        AlphaAnimation alphaAnimation = new AlphaAnimation(0, 1);
+        alphaAnimation.setDuration(3000);
+        rl_root.startAnimation(alphaAnimation);
     }
 
     /**
@@ -273,6 +310,7 @@ public class SplashActivity extends AppCompatActivity {
      */
     private void initUI() {
         tv_version_name = (TextView) findViewById(R.id.tv_version_name);
+        rl_root = (RelativeLayout) findViewById(R.id.activity_splash);
     }
 
     /**
