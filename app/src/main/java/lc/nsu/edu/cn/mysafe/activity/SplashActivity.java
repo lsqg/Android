@@ -233,7 +233,7 @@ public class SplashActivity extends AppCompatActivity {
                 Message msg = Message.obtain();
                 try {
                     //1,封装url
-                    URL url = new URL("http://100.0.101.15:8080/updateinfo.html");
+                    URL url = new URL("http://172.17.131.200:8080/updateinfo.json");
                     //2，开启地址
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     //3,设置请求头
@@ -251,7 +251,7 @@ public class SplashActivity extends AppCompatActivity {
                         //7，json解析
                         JSONObject jsonObject = new JSONObject(json);
                         String versionCode = jsonObject.getString("code");
-                        mVersionDes = jsonObject.getString("des");
+                        mVersionDes = jsonObject.getString("desc");
                         mDownloadUrl = jsonObject.getString("apkurl");
 
                         Log.i(tag, versionCode);
