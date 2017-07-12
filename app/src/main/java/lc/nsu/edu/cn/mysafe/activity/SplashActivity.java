@@ -1,23 +1,26 @@
 package lc.nsu.edu.cn.mysafe.activity;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,6 +38,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import lc.nsu.edu.cn.mysafe.R;
+import lc.nsu.edu.cn.mysafe.utils.ConstantValue;
+import lc.nsu.edu.cn.mysafe.utils.SpUtil;
 import lc.nsu.edu.cn.mysafe.utils.StreamUtil;
 
 public class SplashActivity extends AppCompatActivity {
@@ -64,6 +69,7 @@ public class SplashActivity extends AppCompatActivity {
     private String mVersionDes;
     private String mDownloadUrl;
     private static final String tag = "SplashActivity";
+    private ProgressDialog progressDialog;
 
     private Handler mHandler = new Handler(){
         @Override
@@ -124,9 +130,6 @@ public class SplashActivity extends AppCompatActivity {
 
     private void downloadAPK() {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
-            if (ContextCompat.checkSelfPermission(SplashActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-            }
             Log.i(tag, String.valueOf(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)));
             String path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/mobilesafe.apk";
             HttpUtils httpUtils = new HttpUtils();
@@ -134,6 +137,7 @@ public class SplashActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(ResponseInfo<File> responseInfo) {
                     Log.i(tag, "下载成功");
+                    progressDialog.dismiss();
                     File file = responseInfo.result;
                     installAPK(file);
                 }
@@ -142,22 +146,43 @@ public class SplashActivity extends AppCompatActivity {
                 public void onFailure(HttpException e, String s) {
                     Log.i(tag, String.valueOf(e));
                     Log.i(tag, "下载失败");
+                    progressDialog.dismiss();
                 }
 
                 @Override
                 public void onStart() {
                     Log.i(tag, "刚刚开始下载");
+                    progressDialog = new ProgressDialog(SplashActivity.this);
+                    progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    progressDialog.setCancelable(true);
+                    progressDialog.setIcon(R.drawable.icon1);
+                    progressDialog.setMessage("正在下载");
+                    progressDialog.show();
                     super.onStart();
-
                 }
 
                 @Override
-                public void onLoading(long total, long current, boolean isUploading) {
+                public void onLoading(final long total, final long current, boolean isUploading) {
                     Log.i(tag, "下载中。。。。。");
                     Log.i(tag, "total = " + total);
                     Log.i(tag, "current = " + current);
+                    progressDialog.setMax((int) total);
+                    new Thread(new Runnable(){
+                        @Override
+                        public void run() {
+                            if (current < total){
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        progressDialog.setProgress((int) current);
+                                    }
+                                });
+                            }else {
+                                progressDialog.dismiss();
+                            }
+                        }
+                    }).start();
                     super.onLoading(total, current, isUploading);
-
                 }
             });
         }
@@ -168,9 +193,17 @@ public class SplashActivity extends AppCompatActivity {
      * @param file 安装文件
      */
     private void installAPK(File file) {
+        Uri uri;
+        if (Build.VERSION.SDK_INT < 23) {
+            uri = Uri.fromFile(file);
+        }else {
+            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+            StrictMode.setVmPolicy(builder.build());
+            uri = Uri.parse("file://" + file.getAbsolutePath());
+        }
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.addCategory(Intent.CATEGORY_DEFAULT);
-        intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
+        intent.setDataAndType(uri, "application/vnd.android.package-archive");
         startActivityForResult(intent, 0);
     }
 
@@ -221,7 +254,12 @@ public class SplashActivity extends AppCompatActivity {
             2 版本号
             3 下载地址
          */
-        checkVersion();
+        if(SpUtil.getBoolean(this, ConstantValue.OPEN_UPDATE, false)){
+            checkVersion();
+        }else {
+            Toast.makeText(this, "检查更新已关闭", Toast.LENGTH_LONG).show();
+            mHandler.sendEmptyMessageDelayed(ENTER_HOME,3000);
+        }
     }
 
     private void checkVersion() {
@@ -233,7 +271,7 @@ public class SplashActivity extends AppCompatActivity {
                 Message msg = Message.obtain();
                 try {
                     //1,封装url
-                    URL url = new URL("http://172.17.131.200:8080/updateinfo.json");
+                    URL url = new URL("http://100.0.101.15:8080/updateinfo.html");
                     //2，开启地址
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     //3,设置请求头
@@ -251,7 +289,7 @@ public class SplashActivity extends AppCompatActivity {
                         //7，json解析
                         JSONObject jsonObject = new JSONObject(json);
                         String versionCode = jsonObject.getString("code");
-                        mVersionDes = jsonObject.getString("desc");
+                        mVersionDes = jsonObject.getString("des");
                         mDownloadUrl = jsonObject.getString("apkurl");
 
                         Log.i(tag, versionCode);

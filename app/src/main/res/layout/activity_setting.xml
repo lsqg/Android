@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        style="@style/TitleStyle"
+        android:text="@string/set_title"/>
+
+    <lc.nsu.edu.cn.mysafe.view.SettingItemView
+        xmlns:mobilesafe="http://schemas.android.com/apk/res/lc.nsu.edu.cn.mysafe"
+        android:id="@+id/siv_update"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        mobilesafe:destitle="检查更新设置"
+        mobilesafe:desoff="检查更新已关闭"
+        mobilesafe:deson="检查更新已开启">
+    </lc.nsu.edu.cn.mysafe.view.SettingItemView>
+</LinearLayout>
