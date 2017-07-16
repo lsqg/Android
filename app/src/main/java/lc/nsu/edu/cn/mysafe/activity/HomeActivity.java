@@ -52,9 +52,14 @@ public class HomeActivity extends Activity{
                     case 0:
                         showDialog();
                         break;
+                    case 1:
+                        startActivity(new Intent(HomeActivity.this, BlackNumberActivity.class));
+                        break;
+                    case 7:
+                        startActivity(new Intent(HomeActivity.this, AToolActivity.class));
+                        break;
                     case 8:
-                        Intent intent = new Intent(HomeActivity.this, SettingActivity.class);
-                        startActivity(intent);
+                        startActivity(new Intent(HomeActivity.this, SettingActivity.class));
                         break;
                 }
             }
