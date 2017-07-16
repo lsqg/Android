@@ -10,7 +10,6 @@ import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-
 import lc.nsu.edu.cn.mysafe.R;
 import lc.nsu.edu.cn.mysafe.utils.ConstantValue;
 import lc.nsu.edu.cn.mysafe.utils.SpUtil;

@@ -2,12 +2,10 @@ package lc.nsu.edu.cn.mysafe.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import lc.nsu.edu.cn.mysafe.R;
 
 /**

@@ -11,10 +11,7 @@ import android.telephony.PhoneStateListener;
 import android.telephony.SmsMessage;
 import android.telephony.TelephonyManager;
 import com.android.internal.telephony.ITelephony;
-
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
 import lc.nsu.edu.cn.mysafe.db.dao.BlackNumberDao;
 
 /**

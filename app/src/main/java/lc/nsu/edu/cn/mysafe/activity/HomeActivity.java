@@ -15,7 +15,6 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import lc.nsu.edu.cn.mysafe.R;
 import lc.nsu.edu.cn.mysafe.utils.ConstantValue;
 import lc.nsu.edu.cn.mysafe.utils.MD5Util;

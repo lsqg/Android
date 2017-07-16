@@ -10,7 +10,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.Toast;
-
 import lc.nsu.edu.cn.mysafe.R;
 import lc.nsu.edu.cn.mysafe.service.AddressService;
 import lc.nsu.edu.cn.mysafe.service.BlackNumberService;

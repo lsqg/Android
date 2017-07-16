@@ -2,7 +2,6 @@ package lc.nsu.edu.cn.mysafe.utils;
 
 import android.app.ActivityManager;
 import android.content.Context;
-
 import java.util.List;
 
 /**
