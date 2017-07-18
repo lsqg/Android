@@ -13,4 +13,11 @@
         android:background="#b3f07f"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+    <Button
+        android:textSize="15sp"
+        android:onClick="smsBackup"
+        android:text="短信备份"
+        android:background="#b3f07f"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 </LinearLayout>
